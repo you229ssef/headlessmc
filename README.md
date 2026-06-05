@@ -47,7 +47,9 @@ This e.g. can allow you to test the game in your CI/CD pipeline with [mc-runtime
     - Or e.g. `./headlessmc-launcher-linux` if you use a GraalVM executable.
 3. HeadlessMc will generally not allow you to start the game without an account. 
 Login to your Minecraft account by executing the `login` command and follow the instructions.
+    - To use an offline account, you can use `login <username>`, which will automatically enable offline mode for you.
 4. Launch the game with `launch <modloader>:<version>`, e.g. `launch fabric:1.21.4 -lwjgl`.
+    - You can also specify an offline username directly in the launch command: `launch <version> -offline <username>`.
 The `lwjgl` flag will make the game run in headless mode.
 
 Read [more](https://headlesshq.github.io/headlessmc/getting-started/).

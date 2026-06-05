@@ -11,9 +11,12 @@ import io.github.headlesshq.headlessmc.launcher.command.download.AbstractDownloa
 import io.github.headlesshq.headlessmc.launcher.launch.LaunchException;
 import io.github.headlesshq.headlessmc.launcher.launch.LaunchOptions;
 import io.github.headlesshq.headlessmc.launcher.version.Version;
+import io.github.headlesshq.headlessmc.api.command.CommandUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -31,7 +34,7 @@ public class LaunchCommand extends AbstractDownloadingVersionCommand {
         args.put("-paulscode", "Removes some error messages from the PaulsCode library which may annoy you if you started the game with the -lwjgl flag.");
         args.put("-noout", "Doesn't print Minecrafts output to the console."); // TODO: is this really necessary?
         args.put("-quit", "Quit HeadlessMc after launching the game.");
-        args.put("-offline", "Launch Mc in offline mode.");
+        args.put("-offline", "Launch Mc in offline mode. Optionally specify a username.");
         args.put("--jvm", "Jvm args to use.");
         args.put("--retries", "The amount of times you want to retry running Minecraft.");
     }
@@ -53,7 +56,7 @@ public class LaunchCommand extends AbstractDownloadingVersionCommand {
 
         @Override
         protected void getAccount() throws CommandException {
-            this.account = LaunchCommand.this.getAccount();
+            this.account = LaunchCommand.this.getAccount(args);
         }
 
         @Override
@@ -77,14 +80,26 @@ public class LaunchCommand extends AbstractDownloadingVersionCommand {
         }
     }
 
-    protected LaunchAccount getAccount() throws CommandException {
+    protected LaunchAccount getAccount(String[] args) throws CommandException {
         try {
+            String offlineUsername = CommandUtil.getOption("-offline", args);
+            if (offlineUsername != null && offlineUsername.startsWith("-")) {
+                offlineUsername = null;
+            }
+            if (offlineUsername != null || ctx.getAccountManager().getOfflineChecker().isOffline()) {
+                if (offlineUsername != null) {
+                    return new LaunchAccount(
+                            ctx.getConfig().get(LauncherProperties.OFFLINE_TYPE, "msa"),
+                            offlineUsername,
+                            UUID.nameUUIDFromBytes(("OfflinePlayer:" + offlineUsername).getBytes(StandardCharsets.UTF_8)).toString().replace("-", ""),
+                            ctx.getConfig().get(LauncherProperties.OFFLINE_TOKEN, ""),
+                            ctx.getConfig().get(LauncherProperties.XUID, ""));
+                }
+                return ctx.getAccountManager().getOfflineAccount(ctx.getConfig());
+            }
+
             ValidatedAccount account = ctx.getAccountManager().getPrimaryAccount();
             if (account == null) {
-                if (ctx.getAccountManager().getOfflineChecker().isOffline()) {
-                    return ctx.getAccountManager().getOfflineAccount(ctx.getConfig());
-                }
-
                 throw new AuthException("You can't play the game without an account! Please use the login command.");
             } else {
                 if (ctx.getConfig().get(LauncherProperties.REFRESH_ON_GAME_LAUNCH, true)) {

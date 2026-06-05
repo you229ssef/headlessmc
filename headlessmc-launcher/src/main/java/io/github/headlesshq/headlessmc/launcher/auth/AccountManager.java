@@ -11,9 +11,11 @@ import net.raphimc.minecraftauth.step.msa.StepCredentialsMsaCode;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @CustomLog
@@ -117,10 +119,15 @@ public class AccountManager {
     }
 
     public LaunchAccount getOfflineAccount(Config config) throws AuthException {
+        String username = config.get(LauncherProperties.OFFLINE_USERNAME, "Offline");
+        String uuid = config.get(LauncherProperties.OFFLINE_UUID);
+        if (uuid == null) {
+            uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + username).getBytes(StandardCharsets.UTF_8)).toString().replace("-", "");
+        }
         return new LaunchAccount(
             config.get(LauncherProperties.OFFLINE_TYPE, "msa"),
-            config.get(LauncherProperties.OFFLINE_USERNAME, "Offline"),
-            config.get(LauncherProperties.OFFLINE_UUID, OFFLINE_UUID),
+            username,
+            uuid,
             config.get(LauncherProperties.OFFLINE_TOKEN, ""),
             config.get(LauncherProperties.XUID, ""));
     }
