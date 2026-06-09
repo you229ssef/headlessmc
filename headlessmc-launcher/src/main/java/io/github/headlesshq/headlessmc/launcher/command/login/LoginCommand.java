@@ -4,6 +4,7 @@ import lombok.CustomLog;
 import io.github.headlesshq.headlessmc.api.command.CommandException;
 import io.github.headlesshq.headlessmc.auth.AbstractLoginCommand;
 import io.github.headlesshq.headlessmc.launcher.Launcher;
+import io.github.headlesshq.headlessmc.launcher.LauncherProperties;
 import io.github.headlesshq.headlessmc.launcher.auth.AuthException;
 import io.github.headlesshq.headlessmc.auth.ValidatedAccount;
 import net.raphimc.minecraftauth.step.java.session.StepFullJavaSession;
@@ -20,6 +21,13 @@ public class LoginCommand extends AbstractLoginCommand {
     @Override
     public void execute(String line, String... args) throws CommandException {
         super.execute(line, args);
+    }
+
+    @Override
+    protected void loginOffline(String username) {
+        System.setProperty(LauncherProperties.OFFLINE_USERNAME.getName(), username);
+        launcher.getAccountManager().getOfflineChecker().setOffline(true);
+        launcher.log("Set offline username to " + username + " and enabled offline mode.");
     }
 
     @Override

@@ -60,10 +60,16 @@ public abstract class AbstractLoginCommand extends AbstractCommand {
             cancelLoginProcess(args);
         } else if (args.length >= 2 && args[1].contains("@")) {
             loginWithCredentials(args);
+        } else if (args.length == 2) {
+            loginOffline(args[1]);
         } else {
             // TODO: still unclear, cannot specify logger
             loginWithDeviceCode(args);
         }
+    }
+
+    protected void loginOffline(String username) {
+        // to be implemented by subclasses
     }
 
     protected void loginWithCredentials(String... args) {
